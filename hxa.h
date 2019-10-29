@@ -54,11 +54,14 @@ All names are stored as a 8bit unsigned integer indicating the length of the nam
 Text strings stored in meta data are stored the same way as names, but instead of a 8bit unsigned integer a 32bit unsigned integer is used.
 
 */
+#ifndef HAX_INCLUDE
+#define HAX_INCLUDE
 
-#define HXA_VERSION_API "0.2"
-#define HXA_VERSION_FORMAT 1
+#define HXA_VERSION_API "0.3"
+#define HXA_VERSION_FORMAT 2
 
 typedef unsigned char hxa_uint8;
+typedef signed int hxa_int32;
 typedef unsigned int hxa_uint32;
 typedef signed long long hxa_int64;
 typedef unsigned long long hxa_uint64;
@@ -70,7 +73,7 @@ HaX stores 3 types of nodes:
 typedef enum{
 	HXA_NT_META_ONLY = 0, // node only containing meta data.
 	HXA_NT_GEOMETRY = 1, // node containing a geometry mesh, and meta data.
-	HXA_NT_PIXELS = 2, // node containing a 1D, 2D, 3D, or Cube image, and meta data.
+	HXA_NT_IMAGE = 2, // node containing a 1D, 2D, 3D, or Cube image, and meta data.
 	HXA_NT_COUNT = 3 // the number of different nodes that can be stored in the file.
 }HXANodeType;
 
@@ -79,7 +82,7 @@ HaX stores layer data in the following types:
 */
 typedef enum{
 	HXA_LDT_UINT8 = 0, /* 8bit unsigned integer, */
-	HXA_LDT_UINT32 = 1, /* 32bit unsigned integer */
+	HXA_LDT_INT32 = 1, /* 32bit signed integer */
 	HXA_LDT_FLOAT = 2, /* 32bit IEEE 754 floating point value */
 	HXA_LDT_DOUBLE = 3, /* 64bit IEEE 754 floating point value */
 	HXA_LDT_COUNT = 4 /* number of types supported by layers */
@@ -99,8 +102,9 @@ typedef enum{
 	HXA_MDT_DOUBLE = 1,
 	HXA_MDT_NODE = 2,
 	HXA_MDT_TEXT = 3,
-	HXA_MDT_META = 4,
-	HXA_MDT_COUNT = 5
+	HXA_MDT_BINARY = 4,
+	HXA_MDT_META = 5,
+	HXA_MDT_COUNT = 6
 }HXAMetaDataType;
 
 #define HXA_NAME_MAX_LENGTH 256 //
@@ -114,6 +118,7 @@ typedef struct{
 		double *double_value; // double values
 		hxa_uint32 *node_value; // a reference to another node 
 		char *text_value; // text string
+		unsigned char *bin_value; // binary data string
 		void *array_of_meta; // Meta structures
 	}value;
 }HXAMeta; /* meta data key/value store */
@@ -123,11 +128,11 @@ typedef struct{
 
 typedef struct{
 	char name[HXA_NAME_MAX_LENGTH]; // name of the layer. List of predefined names for common usages like uv, reference, blendshapes, weights ...
-	hxa_uint8 dimentions; // 2 for uv, 3 for xyz or rgb, 4 for rgba;
+	hxa_uint8 components; // 2 for uv, 3 for xyz or rgb, 4 for rgba;
 	HXALayerDataType type; // Stored in the file as a uint8.
 	union{
 		hxa_uint8 *uint8_data;
-		hxa_uint32 *uint32_data;
+		hxa_int32 *int32_data;
 		float *float_data;
 		double *double_data;
 	}data;
@@ -172,8 +177,58 @@ typedef struct{
 	HXANode *node_array; // array of nodes.
 }HXAFile;
 
-extern HXAFile	*hxa_load(char *file_name, int silent);
-extern int		hxa_save(char *file_name, HXAFile *data);
-/* 
+/* Conventions */
+/* ------------ 
+Much of HxA's use is based on convention. HxA lets users store aritrary data in its structure that can be parsed but whos semantic meaning does not need to be understood.
+
+A few conventions are hard, and some are soft. Hard convention that a user HAS to follow in order to produce a valid file. Hard conventions simplify parsing becaus the parser can make some assumptions. Soft convenbtions are basicly recomendations of how to store common data.
+
+If you use HxA for something not coverd by the conventiosns but need a convention for your usecase. Please let us know so that we can add it!
 */
+
+/* Hard conventions */
+/* ---------------- */
+
+#define HXA_CONVENTION_HARD_BASE_VERTEX_LAYER_NAME "vertex"
+#define HXA_CONVENTION_HARD_BASE_VERTEX_LAYER_ID 0
+#define HXA_CONVENTION_HARD_BASE_VERTEX_LAYER_COMPONENTS 3
+#define HXA_CONVENTION_HARD_BASE_EDGE_CORNER_LAYER_NAME "reference"
+#define HXA_CONVENTION_HARD_BASE_EDGE_CORNER_LAYER_ID 0
+#define HXA_CONVENTION_HARD_BASE_EDGE_CORNER_LAYER_COMPONENTS 3
+#define HXA_CONVENTION_HARD_BASE_EDGE_CORNER_LAYER_TYPE HXA_LDT_INT32
+#define HXA_CONVENTION_HARD_EDGE_CORNER_NEIGHBOUR "neighbour"
+
+/* Soft Conventions */
+/* ---------------- */
+
+/* geometry layers */
+
+#define HXA_CONVENTION_SOFT_LAYER_SEQUENCE0 "sequence"
+#define HXA_CONVENTION_SOFT_LAYER_NAME_UV0 "uv"
+#define HXA_CONVENTION_SOFT_LAYER_NORMALS "normal"
+#define HXA_CONVENTION_SOFT_LAYER_TANGENT "tangent"
+#define HXA_CONVENTION_SOFT_LAYER_CREASES "creases"
+#define HXA_CONVENTION_SOFT_LAYER_SELECTION "selection"
+#define HXA_CONVENTION_SOFT_LAYER_SKIN_WEIGHT "skining_weight"
+#define HXA_CONVENTION_SOFT_LAYER_SKIN_REFERENCE "skining_reference"
+#define HXA_CONVENTION_SOFT_LAYER_SKIN_REFERENCE "skining_reference"
+#define HXA_CONVENTION_SOFT_LAYER_BLENDSHAPE "blendshape"
+#define HXA_CONVENTION_SOFT_LAYER_ADD_BLENDSHAPE "addblendshape"
+#define HXA_CONVENTION_SOFT_LAYER_MATERIAL_ID "material"
+
+/* Image layers */
+
+#define HXA_CONVENTION_SOFT_ALBEDO "albedo"
+#define HXA_CONVENTION_SOFT_LIGHT "light"
+#define HXA_CONVENTION_SOFT_DISPLACEMENT "displacement"
+#define HXA_CONVENTION_SOFT_DISTORTION "distortion"
+#define HXA_CONVENTION_SOFT_AMBIENT_OCCLUSION "ambient_occlusion"
+
+/* tags layers */
+
+#define HXA_CONVENTION_SOFT_NAME "name"
+#define HXA_CONVENTION_SOFT_TRANSFORM "transform"
+
+
+#endif
 

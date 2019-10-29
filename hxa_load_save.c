@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "forge.h"
 #include "hxa.h"
 
 #define FALSE 0
@@ -30,9 +29,10 @@ void hxa_util_free_meta(HXAMeta *meta)
 			free(meta->value.node_value);
 		break;
 		case HXA_MDT_TEXT :
-			for(i = 0; i < meta->array_length; i++)
-				free(meta->value.text_value[i]);
 			free(meta->value.text_value);
+		break;
+		case HXA_MDT_BINARY :
+			free(meta->value.bin_value);
 		break;
 		case HXA_MDT_META :
 			for(i = 0; i < meta->array_length; i++)
@@ -56,7 +56,7 @@ void hxa_util_free_node_content(HXANode *node)
 			hxa_util_free_stack(&node->content.geometry.vertex_stack);
 			hxa_util_free_stack(&node->content.geometry.face_stack);
 		break;
-		case HXA_NT_PIXELS :
+		case HXA_NT_IMAGE :
 			hxa_util_free_stack(&node->content.geometry.edge_corner_stack);
 		break;
 	}
@@ -75,21 +75,11 @@ void hxa_util_free_file(HXAFile *file)
 int hxa_load_data(FILE *f, void *buffer, size_t length, char *file_name, int silent)
 {
 	unsigned int read;
-	printf("ftell %u + %u\n", ftell(f), length);
-		f_debug_memory();
 	read = fread(buffer, sizeof(hxa_uint8), length, f);
-		f_debug_memory();
 	if(length != read)
 	{
 		if(!silent)
 			printf("HXA Error: File %s unexpectedly ended\n", file_name);
-		{
-			int i;
-			for(i = 0; i < 10000; i++)
-				printf("flush!\n");
-		}
-		f_debug_memory();
-		exit(0);
 		return FALSE;
 	}
 	return TRUE;
@@ -170,6 +160,11 @@ int hxa_load_meta(FILE *f, char *file_name, HXAMeta **meta, hxa_uint32 *count, i
 				if(!hxa_load_data(f, m->value.node_value, sizeof(hxa_uint32) * m->array_length, file_name, silent))
 					return FALSE;
 			break;
+			case HXA_MDT_BINARY :
+				m->value.text_value = malloc(sizeof(char) * (m->array_length + 1));
+				if(!hxa_load_data(f, m->value.node_value, sizeof(hxa_uint32) * m->array_length, file_name, silent))
+					return FALSE;
+			break;
 			case HXA_MDT_META :	
 				m->value.array_of_meta = NULL;
 				if(!hxa_load_meta(f, file_name, (HXAMeta **)&m->value.array_of_meta, &m->array_length, silent))
@@ -199,7 +194,7 @@ int hxa_load_layer_stack(FILE *f, char *file_name, HXALayerStack *stack, unsigne
 		if(!hxa_load_name(f, file_name, stack->layers[i].name, silent))
 			return FALSE;
 			
-		if(!hxa_load_data(f, &stack->layers[i].dimentions, sizeof(hxa_uint8), file_name, silent) ||
+		if(!hxa_load_data(f, &stack->layers[i].components, sizeof(hxa_uint8), file_name, silent) ||
 			!hxa_load_data(f, &type, sizeof(hxa_uint8), file_name, silent))
 			return FALSE;
 		if(type >= HXA_LDT_COUNT)
@@ -209,7 +204,7 @@ int hxa_load_layer_stack(FILE *f, char *file_name, HXALayerStack *stack, unsigne
 			return FALSE;
 		}
 		stack->layers[i].type = (unsigned int)type;
-		size = type_sizes[stack->layers[i].type] * stack->layers[i].dimentions * length;
+		size = type_sizes[stack->layers[i].type] * stack->layers[i].components * length;
 		stack->layers->data.double_data = malloc(size);
 		stack->layer_count++;
 		if(!hxa_load_data(f, stack->layers->data.double_data, sizeof(hxa_uint8) * size, file_name, silent))
@@ -281,7 +276,7 @@ HXAFile *hxa_load(char *file_name, int silent)
 				node[i].content.geometry.edge_corner_stack.layer_count = 0;
 				node[i].content.geometry.face_stack.layer_count = 0;
 			break;
-			case HXA_NT_PIXELS :
+			case HXA_NT_IMAGE :
 				node[i].content.image.type = HXA_IT_CUBE_IMAGE;
 				node[i].content.image.resolution[0] = node[i].content.image.resolution[1] = node[i].content.image.resolution[2] = 1;
 				node[i].content.image.image_stack.layer_count = 0;
@@ -335,7 +330,7 @@ HXAFile *hxa_load(char *file_name, int silent)
 					return NULL;
 				}
 			break;
-			case HXA_NT_PIXELS :
+			case HXA_NT_IMAGE :
 				if(!hxa_load_data(f, &node[i].content.image.type, sizeof(hxa_uint8), file_name, silent))
 				{
 					if(!silent)
@@ -397,9 +392,10 @@ void hxa_save_meta(FILE *f,  HXAMeta *meta, hxa_uint32 count)
 				fwrite(meta[i].value.node_value, sizeof(hxa_uint32), meta[i].array_length, f);
 			break;
 			case HXA_MDT_TEXT :
-				for(j = 0; j < 255 && meta[i].value.text_value[j] != 0; j++);
-				fwrite(&j, sizeof(hxa_uint32), 1, f);
-				fwrite(meta[i].value.text_value, sizeof(char), j, f);
+				fwrite(meta[i].value.text_value, sizeof(char), meta[i].array_length, f);
+			break;
+			case HXA_MDT_BINARY :
+				fwrite(meta[i].value.bin_value, sizeof(char), meta[i].array_length, f);
 			break;
 			case HXA_MDT_META :	
 				hxa_save_meta(f, meta[i].value.array_of_meta, meta[i].array_length);
@@ -421,10 +417,10 @@ void hxa_save_layer_stack(FILE *f, HXALayerStack *stack, unsigned int length)
 		name_lenght = j;
 		fwrite(&name_lenght, sizeof(hxa_uint8), 1, f);
 		fwrite(stack->layers[i].name, sizeof(hxa_uint8), name_lenght, f);
-		fwrite(&stack->layers[i].dimentions, sizeof(hxa_uint8), 1, f);
+		fwrite(&stack->layers[i].components, sizeof(hxa_uint8), 1, f);
 		type = stack->layers[i].type;
 		fwrite(&type, sizeof(hxa_uint8), 1, f);
-		size = stack->layers[i].dimentions * length;
+		size = stack->layers[i].components * length;
 		fwrite(stack->layers[i].data.double_data, type_sizes[stack->layers[i].type], size, f);
 	}
 }
@@ -460,7 +456,7 @@ int hxa_save(char *file_name, HXAFile *data)
 				fwrite(&node->content.geometry.face_count, sizeof(hxa_uint32), 1, f);
 				hxa_save_layer_stack(f, &node->content.geometry.face_stack, node->content.geometry.face_count);			
 			break;
-			case HXA_NT_PIXELS :
+			case HXA_NT_IMAGE :
 				type = node->content.image.type;
 				fwrite(type, sizeof(hxa_uint8), 1, f);
 				dimentions = node->content.image.type;
