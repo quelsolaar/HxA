@@ -1,5 +1,4 @@
-/* ------------- HxA 3D asset format ---------------*/
-/*
+/* ------------- HxA 3D asset format --------------- 
 HxA is a interchangeable graphics asset format. Written by Eskil Steenberg. @quelsolaar / eskil 'at' obsession 'dot' se / www.quelsolaar.com
 
 Rational:
@@ -30,9 +29,9 @@ The data is story in a number of nodes that are stored in an array. Each node st
 Data for Vertices, Corners, Faces, and Pixels are stored in named layer stacks. Each stack consists of a number of named layers. All layers in the stack have the same number of elements. Each layer describes one property of the primitive. Each layer can have multiple channels and each layer can store data of a different type.
 
 HaX stores 3 kinds of nodes
- -Pixel data.
- -Polygon geometry data.
- -Meta data only.
+-Pixel data.
+-Polygon geometry data.
+-Meta data only.
 
 Pixel Nodes stores pixels in a layer stack. A layer may store things like Albedo, Roughness, Reflectance, Light maps, Masks, Normal maps, and Displacement. Layers use the channels of the layers to store things like color. The length of the layer stack is determined by the type and dimensions stored in the
 
@@ -58,7 +57,7 @@ Text strings stored in meta data are stored the same way as names, but instead o
 #define HAX_INCLUDE
 
 #define HXA_VERSION_API "0.3"
-#define HXA_VERSION_FORMAT 2
+#define HXA_VERSION_FORMAT 3
 
 typedef unsigned char hxa_uint8;
 typedef signed int hxa_int32;
@@ -141,8 +140,8 @@ typedef struct{
 /* Layers stacks are arrays of layers where all the layers have the same number of entries (polygons, edges, vertices or pixels) */
 
 typedef struct{
-	hxa_uint32 layer_count;
-	HXALayer *layers;
+	hxa_uint32 layer_count; /* the number of loayers in a stack. */
+	HXALayer *layers; /* An array of layers. */
 }HXALayerStack;
 
 /* A file consists of an array of nodes, All noides have meta data. Geometry nodes have geometry, image nodes have pixels*/
@@ -156,7 +155,8 @@ typedef struct{
 			hxa_uint32 vertex_count; // number of vertices
 			HXALayerStack vertex_stack; // stack of vertex arrays. the first layer is always the vertex positions
 			hxa_uint32 edge_corner_count; // number of corners
-			HXALayerStack edge_corner_stack; // stack of corner arrays, the first layer is allways a reference array (see below)
+			HXALayerStack corner_stack; // stack of corner arrays, the first layer is allways a reference array (see below)
+			HXALayerStack edge_stack; // stack of edge arrays
 			hxa_uint32 face_count; // number of polygons
 			HXALayerStack face_stack; // stack of per polygon data.
 		}geometry; 
@@ -192,11 +192,12 @@ If you use HxA for something not coverd by the conventiosns but need a conventio
 #define HXA_CONVENTION_HARD_BASE_VERTEX_LAYER_NAME "vertex"
 #define HXA_CONVENTION_HARD_BASE_VERTEX_LAYER_ID 0
 #define HXA_CONVENTION_HARD_BASE_VERTEX_LAYER_COMPONENTS 3
-#define HXA_CONVENTION_HARD_BASE_EDGE_CORNER_LAYER_NAME "reference"
-#define HXA_CONVENTION_HARD_BASE_EDGE_CORNER_LAYER_ID 0
-#define HXA_CONVENTION_HARD_BASE_EDGE_CORNER_LAYER_COMPONENTS 3
-#define HXA_CONVENTION_HARD_BASE_EDGE_CORNER_LAYER_TYPE HXA_LDT_INT32
-#define HXA_CONVENTION_HARD_EDGE_CORNER_NEIGHBOUR "neighbour"
+#define HXA_CONVENTION_HARD_BASE_CORNER_LAYER_NAME "reference"
+#define HXA_CONVENTION_HARD_BASE_CORNER_LAYER_ID 0
+#define HXA_CONVENTION_HARD_BASE_CORNER_LAYER_COMPONENTS 1
+#define HXA_CONVENTION_HARD_BASE_CORNER_LAYER_TYPE HXA_LDT_INT32
+#define HXA_CONVENTION_HARD_EDGE_NEIGHBOUR_LAYER_NAME "neighbour"
+#define HXA_CONVENTION_HARD_EDGE_NEIGHBOUR_LAYER_TYPE HXA_LDT_INT32
 
 /* Soft Conventions */
 /* ---------------- */

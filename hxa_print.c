@@ -172,7 +172,8 @@ void hxa_print(HXAFile *file, int data)
 				printf("\t-Geometry vertex count: %u\n", file->node_array[i].content.geometry.vertex_count);
 				hxa_print_layer_stack(&file->node_array[i].content.geometry.vertex_stack, "Vertex", data, file->node_array[i].content.geometry.vertex_count);
 				printf("\t-Geometry edge count: %u\n", file->node_array[i].content.geometry.edge_corner_count);
-				hxa_print_layer_stack(&file->node_array[i].content.geometry.edge_corner_stack, "Edge", data, file->node_array[i].content.geometry.edge_corner_count);
+				hxa_print_layer_stack(&file->node_array[i].content.geometry.corner_stack, "Corner", data, file->node_array[i].content.geometry.edge_corner_count);
+				hxa_print_layer_stack(&file->node_array[i].content.geometry.edge_stack, "Edge", data, file->node_array[i].content.geometry.edge_corner_count);
 				printf("\t-Geometry face count: %u\n", file->node_array[i].content.geometry.face_count);
 				hxa_print_layer_stack(&file->node_array[i].content.geometry.face_stack, "Face", data, file->node_array[i].content.geometry.face_count);
 			break;

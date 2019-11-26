@@ -1,3 +1,8 @@
+#define _CRT_SECURE_NO_WARNINGS
+#pragma warning(disable:4996)
+#pragma warning(disable:4703)
+#pragma warning(disable:4996)
+#pragma warning(disable:4664)
 #include <stdlib.h>
 #include <stdio.h>
 #include "hxa.h"
@@ -52,12 +57,13 @@ void hxa_util_free_node_content(HXANode *node)
 	switch(node->type)
 	{
 		case HXA_NT_GEOMETRY :
-			hxa_util_free_stack(&node->content.geometry.edge_corner_stack);
+			hxa_util_free_stack(&node->content.geometry.corner_stack);
+			hxa_util_free_stack(&node->content.geometry.edge_stack);
 			hxa_util_free_stack(&node->content.geometry.vertex_stack);
 			hxa_util_free_stack(&node->content.geometry.face_stack);
 		break;
 		case HXA_NT_IMAGE :
-			hxa_util_free_stack(&node->content.geometry.edge_corner_stack);
+			hxa_util_free_stack(&node->content.image.image_stack);
 		break;
 	}
 }
@@ -157,7 +163,8 @@ int hxa_load_meta(FILE *f, char *file_name, HXAMeta **meta, hxa_uint32 *count, i
 			break;
 			case HXA_MDT_TEXT :
 				m->value.text_value = malloc(sizeof(char) * (m->array_length + 1));
-				if(!hxa_load_data(f, m->value.node_value, sizeof(hxa_uint32) * m->array_length, file_name, silent))
+				m->value.text_value[m->array_length] = 0;
+				if(!hxa_load_data(f, m->value.node_value, sizeof(char) * m->array_length, file_name, silent))
 					return FALSE;
 			break;
 			case HXA_MDT_BINARY :
@@ -205,9 +212,9 @@ int hxa_load_layer_stack(FILE *f, char *file_name, HXALayerStack *stack, unsigne
 		}
 		stack->layers[i].type = (unsigned int)type;
 		size = type_sizes[stack->layers[i].type] * stack->layers[i].components * length;
-		stack->layers->data.double_data = malloc(size);
+		stack->layers[i].data.double_data = malloc(size);
 		stack->layer_count++;
-		if(!hxa_load_data(f, stack->layers->data.double_data, sizeof(hxa_uint8) * size, file_name, silent))
+		if(!hxa_load_data(f, stack->layers[i].data.double_data, sizeof(hxa_uint8) * size, file_name, silent))
 			return FALSE;
 	}
 	return TRUE;
@@ -273,7 +280,8 @@ HXAFile *hxa_load(char *file_name, int silent)
 				node[i].content.geometry.edge_corner_count = 0;
 				node[i].content.geometry.face_count = 0;
 				node[i].content.geometry.vertex_stack.layer_count = 0;
-				node[i].content.geometry.edge_corner_stack.layer_count = 0;
+				node[i].content.geometry.corner_stack.layer_count = 0;
+				node[i].content.geometry.edge_stack.layer_count = 0;
 				node[i].content.geometry.face_stack.layer_count = 0;
 			break;
 			case HXA_NT_IMAGE :
@@ -314,10 +322,18 @@ HXAFile *hxa_load(char *file_name, int silent)
 					hxa_util_free_file(file);
 					return NULL;
 				}
-				if(!hxa_load_layer_stack(f, file_name, &node[i].content.geometry.edge_corner_stack, node[i].content.geometry.edge_corner_count, silent))
+				if(!hxa_load_layer_stack(f, file_name, &node[i].content.geometry.corner_stack, node[i].content.geometry.edge_corner_count, silent))
 				{
 					hxa_util_free_file(file);
 					return NULL;
+				}
+				if(file->version > 2)
+				{
+					if(!hxa_load_layer_stack(f, file_name, &node[i].content.geometry.edge_stack, node[i].content.geometry.edge_corner_count, silent))
+					{
+						hxa_util_free_file(file);
+						return NULL;
+					}
 				}
 				if(!hxa_load_data(f, &node[i].content.geometry.face_count, sizeof(hxa_uint32), file_name, silent))
 				{
@@ -452,7 +468,8 @@ int hxa_save(char *file_name, HXAFile *data)
 				fwrite(&node->content.geometry.vertex_count, sizeof(hxa_uint32), 1, f);
 				hxa_save_layer_stack(f, &node->content.geometry.vertex_stack, node->content.geometry.vertex_count);
 				fwrite(&node->content.geometry.edge_corner_count, sizeof(hxa_uint32), 1, f);
-				hxa_save_layer_stack(f, &node->content.geometry.edge_corner_stack, node->content.geometry.edge_corner_count);
+				hxa_save_layer_stack(f, &node->content.geometry.corner_stack, node->content.geometry.edge_corner_count);
+				hxa_save_layer_stack(f, &node->content.geometry.edge_stack, node->content.geometry.edge_corner_count);
 				fwrite(&node->content.geometry.face_count, sizeof(hxa_uint32), 1, f);
 				hxa_save_layer_stack(f, &node->content.geometry.face_stack, node->content.geometry.face_count);			
 			break;
