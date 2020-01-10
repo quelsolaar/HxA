@@ -106,6 +106,7 @@ unsigned int hxa_hole_close_one(int *ref, unsigned int ref_length, float *vertex
 {
 	HxAHoleEdge *start, *next, *found;
 	unsigned int i, count = 0;
+	float best;
 	i = edge;		
 	while(1)
 	{
@@ -131,12 +132,19 @@ unsigned int hxa_hole_close_one(int *ref, unsigned int ref_length, float *vertex
 
 	while(count != 0)
 	{
-		found = start;
-		for(next = start->next; next != start; next = next->next)
-			if(found->value < next->value)
-				found = next;
-				
-		
+		found = NULL;
+		next = start;
+		best = -1.0;
+		for(i = 0; i < count; i++)
+		{
+			if(best < next->value && ((HxAHoleEdge *)next->next)->value > 0.0001 || ((HxAHoleEdge *)next->previous)->value > 0.0001)
+			{
+				best = next->value;
+			 	found = next;
+			}
+			next = next->next;
+		}	
+	
 		next = found->next;
 		ref[ref_length + 0] = hxa_ref(found->edge);
 		ref[ref_length + 1] = hxa_ref(((HxAHoleEdge *)next->next)->edge);
@@ -164,7 +172,7 @@ unsigned int hxa_hole_close_one(int *ref, unsigned int ref_length, float *vertex
 		found->edge = ref_length;
 		found->value = un_hole_edge_rate(ref, vertex_array, neighbour, found->edge, ((HxAHoleEdge *)found->next)->edge, ((HxAHoleEdge *)((HxAHoleEdge *)found->next)->next)->edge);
 		((HxAHoleEdge *)found->previous)->value = un_hole_edge_rate(ref, vertex_array, neighbour, ((HxAHoleEdge *)found->previous)->edge, found->edge, ((HxAHoleEdge *)found->next)->edge);
-		if(un_hole_edge_length(ref, vertex_array, ref_length + 1) < un_hole_edge_length(ref, vertex_array, ref_length + 2))
+		if(un_hole_edge_length(ref, vertex_array, ref_length + 1) < un_hole_edge_length(ref, vertex_array, ref_length + 0))
 			found->value *= 0.95;
 		else
 			((HxAHoleEdge *)found->previous)->value *= 0.95;

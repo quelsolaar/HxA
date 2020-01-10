@@ -1,8 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
-#pragma warning(disable:4996)
-#pragma warning(disable:4703)
-#pragma warning(disable:4996)
-#pragma warning(disable:4664)
 #include <stdlib.h>
 #include <stdio.h>
 #include "hxa.h"
@@ -163,8 +158,7 @@ int hxa_load_meta(FILE *f, char *file_name, HXAMeta **meta, hxa_uint32 *count, i
 			break;
 			case HXA_MDT_TEXT :
 				m->value.text_value = malloc(sizeof(char) * (m->array_length + 1));
-				m->value.text_value[m->array_length] = 0;
-				if(!hxa_load_data(f, m->value.node_value, sizeof(char) * m->array_length, file_name, silent))
+				if(!hxa_load_data(f, m->value.node_value, sizeof(hxa_uint32) * m->array_length, file_name, silent))
 					return FALSE;
 			break;
 			case HXA_MDT_BINARY :

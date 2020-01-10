@@ -12,10 +12,6 @@ extern int		hxa_util_validate_pow(HXAFile *file, int silent); /* Validate that a
 extern void		hxa_print(HXAFile *file, int data); 
 extern void		hxa_print_meta_find(HXAFile *file, char *key);
 
-extern void		hxa_util_meta_add(HXAMeta **meta_data, hxa_uint32 *meta_data_count, char *name, HXAMetaDataType type, void *data, unsigned int length, int copy);
-extern void		*hxa_util_meta_get(HXAMeta *meta_data, hxa_uint32 meta_data_count, char *name, HXAMetaDataType type, unsigned int *length, int recursive);
-extern unsigned int hxa_util_meta_get_next(HXAMeta *meta_data, hxa_uint32 start, hxa_uint32 meta_data_count, char *name, HXAMetaDataType type);
-
 #define			hxa_ref(a) (ref[a] >= 0 ? ref[a] : (-ref[a] - 1))
 extern int		hxa_corner_get_next(int *ref, unsigned int corner);
 extern int		hxa_corner_get_previous(int *ref, unsigned int corner);

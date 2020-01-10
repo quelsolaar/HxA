@@ -20,10 +20,13 @@ int hxa_convert_param_to_int(char *string, unsigned int *output)
 	return TRUE;
 }
 
+extern void hxa_load_png(char *file_name);
+
 int main(int argc, char **argv)
 {
 	HXAFile *file, *file2;
 	unsigned int i, j, silent, save, int_param;
+	hxa_load_png("import_test.png");
 	if(argc < 2)
 	{
 		printf("HxA utility. Written by Eskil Steenberg www.quelsolaar.com. MIT License\n");
