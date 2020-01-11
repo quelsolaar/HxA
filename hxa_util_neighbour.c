@@ -84,7 +84,7 @@ unsigned int *hxa_neighbour_node(HXANode *node)
 		{
 			counter++;
 			clear++;
-			r = hxa_ref(i);
+			r = hxa_ref(ref, i);
 			cor = v[r];
 			if(cor == -1)
 			{
@@ -96,7 +96,7 @@ unsigned int *hxa_neighbour_node(HXANode *node)
 			{
 				a = hxa_corner_get_previous(ref, i);
 				b = hxa_corner_get_next(ref, cor);
-				if(n[cor] == -1 && n[a] == -1 && hxa_ref(a) == hxa_ref(b))
+				if(n[cor] == -1 && n[a] == -1 && hxa_ref(ref, a) == hxa_ref(ref, b))
 				{
 					n[a] = cor;
 					n[cor] = a;
@@ -111,7 +111,7 @@ unsigned int *hxa_neighbour_node(HXANode *node)
 				}
 				a = hxa_corner_get_next(ref, i);
 				b = hxa_corner_get_previous(ref, cor);
-				if(n[i] == -1 && n[b] == -1 && hxa_ref(a) == hxa_ref(b))
+				if(n[i] == -1 && n[b] == -1 && hxa_ref(ref, a) == hxa_ref(ref, b))
 				{
 					n[i] = b;						
 					n[b] = i;

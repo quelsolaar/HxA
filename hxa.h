@@ -53,6 +53,8 @@ All names are stored as a 8bit unsigned integer indicating the length of the nam
 Text strings stored in meta data are stored the same way as names, but instead of a 8bit unsigned integer a 32bit unsigned integer is used.
 
 */
+#include "forge.h"
+
 #ifndef HAX_INCLUDE
 #define HAX_INCLUDE
 
