@@ -57,5 +57,5 @@ typedef struct{
 
 
 extern HXAFile *hxa_fbx_convert(FBXRecord *record, HXAFile *file);
-extern void fbx_record_print(FBXRecord *record, uint generation);
-extern void fbx_record_print_small(FBXRecord *record, uint generation);
+extern void fbx_record_print(FBXRecord *record, unsigned int generation);
+extern void fbx_record_print_small(FBXRecord *record, unsigned int generation);

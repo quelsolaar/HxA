@@ -20,10 +20,31 @@ int hxa_convert_param_to_int(char *string, unsigned int *output)
 	return TRUE;
 }
 
+int hxa_type_test(char *path, char *type)
+{
+	unsigned int i, j;
+	for(i = 0; path[i] != 0; i++)
+	{
+		if(path[i] == '.')
+		{
+			i++;
+			for(j = 0; type[j] != 0 && path[i + j] != 0 && (path[i + j] == type[j] || path[i + j] + 32 == type[j]); j++);
+			if(type[j] == 0)
+				return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+extern void hxa_load_png(HXAFile *file, char *file_name);
+extern void hxa_type_convert_gen();
+
 int main(int argc, char **argv)
 {
-	HXAFile *file, *file2;
+	HXAFile *file = NULL, *file2;
 	unsigned int i, j, silent, save, int_param;
+
+//	hxa_type_convert_gen();
 	if(argc < 2)
 	{
 		printf("HxA utility. Written by Eskil Steenberg www.quelsolaar.com. MIT License\n");
@@ -46,17 +67,42 @@ int main(int argc, char **argv)
 	}
 	for(i = 3; i < argc && strcmp(argv[i], "silent") != 0; i++);
 	silent = i != argc;
-	if(!silent)
-		printf("Loading HxA file: %s\n", argv[1]);
-	file = hxa_load(argv[1], silent);
-	if(file == NULL)
-		file = hxa_fbx_load(argv[1], file);
+
+		
+	if(hxa_type_test(argv[1], "fbx"))
+	{
+		if(!silent)
+			printf("Loading Autodesk FBX file: %s\n", argv[1]);
+		file = hxa_util_fbx_load(argv[1], NULL);
+		if(!silent && file == NULL)
+			printf("HxA Error: FBX load failed.\n");
+	}else if(hxa_type_test(argv[1], "ttf") || hxa_type_test(argv[1], "tte") || hxa_type_test(argv[1], "dfont") || hxa_type_test(argv[1], "otf") || hxa_type_test(argv[1], "otc") || hxa_type_test(argv[1], "ttf") || hxa_type_test(argv[1], "ttc"))
+	{
+		if(!silent)
+			printf("Loading TrueType font file: %s\n", argv[1]);
+		file = hxa_util_true_type_load(argv[1]);
+		if(!silent && file == NULL)
+			printf("HxA Error: TrueType load failed.\n");
+	}else if(hxa_type_test(argv[1], "png"))
+	{
+		if(!silent)
+			printf("Loading PNG image file: %s\n", argv[1]);
+		file = hxa_util_true_type_load(argv[1]);
+		if(!silent && file == NULL)
+			printf("HxA Error: PNG image load failed.\n");
+	}	
 	if(file == NULL)
 	{
 		if(!silent)
+			printf("Loading HxA file: %s\n", argv[1]);
+		file = hxa_load(argv[1], silent);
+		if(!silent && file == NULL)
+		{
 			printf("HxA Error: Loading file failed. Exiting...\n");
-		return FALSE;
+			return 0;
+		}
 	}
+
 	save = TRUE;
 	for(i = 2; i < argc; i++)
 	{

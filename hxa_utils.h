@@ -8,6 +8,7 @@ Functions for saving and loading HxA files to and from disk. */
 extern HXAFile	*hxa_load(char *file_name, int silent); /* Load a Hxa file in to memory.*/
 extern int		hxa_save(char *file_name, HXAFile *data); /* Save a HxA structure to disk. */
 
+extern void		hxa_util_primitive_cube(HXAFile *file, double x, double y, double z);
 
 extern void		hxa_util_free_node_content(HXANode *node); /* frees the content of a node but does not free the node pointer itself */
 extern void		hxa_util_free_file(HXAFile *file); /* Frees an entire HxA structure. */
@@ -48,6 +49,8 @@ extern void		hxa_util_convert_node_double_to_float(HXANode *node); /* Converts a
 extern void		hxa_util_node_vertex_purge(HXANode *node); /* removes any unused vertices from a node */
 extern void		hxa_util_vertex_purge(HXAFile *file); /* removes any unused vertices from a structure */
 
+extern void		hxa_util_normal_corner(HXANode *node);
+
 extern void		hxa_util_triangulate_node(HXANode *node, unsigned int max_sides); /* Splits all n-gons with more sides then max_sides in to triangles. */
 
 extern void		hxa_corner_to_vertex(HXANode *node); /**/
@@ -56,4 +59,23 @@ extern void		hxa_close_node(HXANode *node); /* Closes all holes in a polygon mes
 extern void		hxa_close_file(HXAFile *file); /* Closes all holes in all polygon meshes */
 
 
-extern HXAFile *hxa_fbx_load(char *file_name, HXAFile *hxa_file);
+
+extern HXAFile *hxa_util_true_type_load(char *file_name); /* loads a Truetype font and converts in in to polygon nodes. */
+
+extern HXAFile *hxa_util_fbx_load(char *file_name, HXAFile *hxa_file);
+
+typedef enum{
+	HXA_UAET_INT8,
+	HXA_UAET_UINT8,
+	HXA_UAET_INT16,
+	HXA_UAET_UINT16,
+	HXA_UAET_INT32,
+	HXA_UAET_UINT32,
+	HXA_UAET_HALF16,
+	HXA_UAET_FLOAT32,
+	HXA_UAET_DOUBLE64,
+	HXA_UAET_COUNT
+}HxAUtilArrayExportTypes;
+
+unsigned char *hxa_type_vertex_convert(HXANode *node, unsigned char *buffer, unsigned int param_count, char **param_names, HxAUtilArrayExportTypes *param_types, unsigned int *param_dimentions);
+unsigned char *hxa_type_reference_convert(HXANode *node, unsigned char *buffer, unsigned int param_count, char **param_names, HxAUtilArrayExportTypes *param_types, unsigned int *param_dimentions);

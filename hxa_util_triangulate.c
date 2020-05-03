@@ -346,7 +346,7 @@ void hxa_util_triangulate_re_ref_edge_layer(HXALayer *layers, unsigned int count
 
 void hxa_util_triangulate_node(HXANode *node, unsigned int max_sides)
 {
-	unsigned int i, j, poly_count, ref_count, sides, *corner_reference, *poly_reference, count;
+	unsigned int i, j, k, poly_count, ref_count, sides, *corner_reference, *poly_reference, count;
 	double *vertex;
 	float *vertex_f = NULL;
 	int *ref, *new_ref;
@@ -366,6 +366,7 @@ void hxa_util_triangulate_node(HXANode *node, unsigned int max_sides)
 	for(i = 0; i < node->content.geometry.edge_corner_count; i += sides)
 	{
 		for(sides = 0; ref[i + sides] >= 0; sides++);
+		sides++;
 		if(sides > max_sides)
 		{
 			poly_count += sides + 1 - 3;
@@ -382,15 +383,16 @@ void hxa_util_triangulate_node(HXANode *node, unsigned int max_sides)
 	poly_count = ref_count = 0;
 
 	count = node->content.geometry.vertex_count;
-	for(i = 0; i < node->content.geometry.edge_corner_count; i += sides)
+	for(i = k = 0; i < node->content.geometry.edge_corner_count; i += sides)
 	{
 		for(sides = 0; ref[i + sides] >= 0; sides++);
+		sides++;
 		if(sides > max_sides)
 		{
 			hxa_util_triangulate_ngon(&ref[i], &new_ref[ref_count], &corner_reference[ref_count], i, sides, vertex, count);
 			ref_count += (sides + 1 - 3) * 3;
 			for(j = max_sides - 1; j < sides; j++)
-				poly_reference[poly_count++] = i;
+				poly_reference[poly_count++] = k;
 		}else
 		{
 			for(j = 0; j < sides; j++)
@@ -398,16 +400,21 @@ void hxa_util_triangulate_node(HXANode *node, unsigned int max_sides)
 				new_ref[ref_count] = ref[i + j];
 				corner_reference[ref_count++] = i + j;
 			}
-			poly_reference[poly_count++] = i;
+			poly_reference[poly_count++] = k;
 		}
+		k++;
 	}
-	node->content.geometry.corner_stack.layers[0].data.int32_data = new_ref;	
+	node->content.geometry.corner_stack.layers[0].data.int32_data = new_ref;
+	for(i = 0; i < ref_count; i++)
+		printf("corner_reference[%u] = %u\n", i, corner_reference[i]);
 	for(i = 1; i < node->content.geometry.corner_stack.layer_count; i++)
 		hxa_util_triangulate_re_ref_layer(&node->content.geometry.corner_stack.layers[i], ref_count, corner_reference);
 	for(i = 0; i < node->content.geometry.edge_stack.layer_count; i++)
-		hxa_util_triangulate_re_ref_edge_layer(&node->content.geometry.corner_stack.layers[i], ref_count, new_ref, ref, corner_reference);
+		hxa_util_triangulate_re_ref_edge_layer(&node->content.geometry.edge_stack.layers[i], ref_count, new_ref, ref, corner_reference);
 	for(i = 0; i < node->content.geometry.face_stack.layer_count; i++)
-		hxa_util_triangulate_re_ref_layer(&node->content.geometry.face_stack.layers[i], ref_count, poly_reference);
+		hxa_util_triangulate_re_ref_layer(&node->content.geometry.face_stack.layers[i], poly_count, poly_reference);
+	node->content.geometry.face_count = poly_count;
+	node->content.geometry.edge_corner_count = ref_count;
 	free(ref);
 	free(corner_reference);
 	free(poly_reference);

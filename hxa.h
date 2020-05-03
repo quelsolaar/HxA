@@ -53,7 +53,6 @@ All names are stored as a 8bit unsigned integer indicating the length of the nam
 Text strings stored in meta data are stored the same way as names, but instead of a 8bit unsigned integer a 32bit unsigned integer is used.
 
 */
-#include "forge.h"
 
 #ifndef HAX_INCLUDE
 #define HAX_INCLUDE
@@ -209,9 +208,11 @@ If you use HxA for something not coverd by the conventiosns but need a conventio
 #define HXA_CONVENTION_SOFT_LAYER_SEQUENCE0 "sequence"
 #define HXA_CONVENTION_SOFT_LAYER_NAME_UV0 "uv"
 #define HXA_CONVENTION_SOFT_LAYER_NORMALS "normal"
+#define HXA_CONVENTION_SOFT_LAYER_BINORMAL "binormal"
 #define HXA_CONVENTION_SOFT_LAYER_TANGENT "tangent"
+#define HXA_CONVENTION_SOFT_LAYER_COLOR "color"
 #define HXA_CONVENTION_SOFT_LAYER_CREASES "creases"
-#define HXA_CONVENTION_SOFT_LAYER_SELECTION "selection"
+#define HXA_CONVENTION_SOFT_LAYER_SELECTION "select"
 #define HXA_CONVENTION_SOFT_LAYER_SKIN_WEIGHT "skining_weight"
 #define HXA_CONVENTION_SOFT_LAYER_SKIN_REFERENCE "skining_reference"
 #define HXA_CONVENTION_SOFT_LAYER_SKIN_REFERENCE "skining_reference"

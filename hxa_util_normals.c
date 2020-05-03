@@ -78,7 +78,7 @@ void hxa_util_normal_face(HXANode *node)
 	if(node->content.geometry.vertex_stack.layers[0].type == HXA_LDT_FLOAT)
 		layer->data.float_data = hxa_util_normal_facef(node);
 	if(node->content.geometry.vertex_stack.layers[0].type == HXA_LDT_DOUBLE)
-		layer->data.double_data = hxa_util_normal_facef(node);
+		layer->data.double_data = hxa_util_normal_faced(node);
 }
 
 void hxa_util_normal_corner(HXANode *node)
@@ -107,6 +107,9 @@ void hxa_util_normal_corner(HXANode *node)
 	if(node->content.geometry.vertex_stack.layers[0].type == HXA_LDT_DOUBLE)
 		face_data = hxa_util_normal_faced(node);
 	neighbour = hxa_neighbour_node(node);
+	for(i = 0; i < node->content.geometry.edge_corner_count; i++)
+		if(neighbour[i] < node->content.geometry.edge_corner_count && neighbour[neighbour[i]] != i)
+			i += 0;
 	for(i = 0; i < node->content.geometry.edge_stack.layer_count; i++)
 	{
 		for(j = 0; node->content.geometry.edge_stack.layers[i].name[j] == crease_name[j] && crease_name[j] != 0; j++);
