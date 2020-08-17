@@ -3,8 +3,8 @@
 
 HxA is a interchangeable graphics asset format. Written by Eskil Steenberg. @quelsolaar / eskil 'at' obsession 'dot' se / www.quelsolaar.com
 
-#Rationale
-----------
+# Rationale
+-----------
 
 - Does the world need another Graphics file format?
 
@@ -22,8 +22,8 @@ Yes there are, but only for 2D RGB/RGBA images. A lot of computer graphics rende
 
 The entire point of HxA is to make a format that is practical to implement. Features like NURBSs, Construction history, or BSP trees would make the format too large to serve its purpose. The facilities of the formats to store meta data should make the format flexible enough for most uses. Adding HxA support should be something anyone can do in a days work.
 
-#Structure
------------
+# Structure
+------------
 
 HxA is designed to be extremely simple to parse, and is therefore based around conventions. It has a few basic structures, and depending on how they are used they mean different things. This means that you can implement a tool that loads the entire file, modifies the parts it cares about and leaves the rest intact. It is also possible to write a tool that makes all data in the file editable without the need to understand its use. It is also possible for anyone to use the format to store data axillary data. Anyone who wants to store data not covered by a convention can submit a convention to extend the format. There should never be a convention for storing the same data in two differed ways.
 
@@ -53,8 +53,8 @@ is stored:
 
 The face stack stores values per face. the length of the face stack has to match the number of negative values in the index layer in the corner stack. The face stack can be used to store things like material index.
 
-#Storage
---------
+# Storage
+---------
 
 All data is stored in little endian byte order with no padding. The layout mirrors the structs defined below with a few exceptions.
 All names are stored as a 8bit unsigned integer indicating the length of the name followed by that many characters. Termination is not stored in the file.
@@ -186,8 +186,8 @@ typedef struct{
 }HXAFile;
 ```
 
-#Conventions
------------- 
+# Conventions
+------------- 
 Much of HxA's use is based on convention. HxA lets users store aritrary data in its structure that can be parsed but whos semantic meaning does not need to be understood.
 
 A few conventions are hard, and some are soft. Hard convention that a user HAS to follow in order to produce a valid file. Hard conventions simplify parsing becaus the parser can make some assumptions. Soft convenbtions are basicly recomendations of how to store common data.
