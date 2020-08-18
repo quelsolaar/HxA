@@ -1,17 +1,12 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "hxa.h"
 #include "hxa_utils.h"
-#include "forge.h"
-/*
+
 #define FALSE 0
 #define TRUE !FALSE
-*/
-void hxa_load_png_ihdr(unsigned char *data)
-{
-
-}
 
 typedef enum{
 	HXA_PNG_CT_GRAYSCALE = 0,
@@ -101,7 +96,7 @@ void hxa_load_png(HXAFile *file, char *file_name)
 	unsigned char bits, compression, filter, interlace, *meta_data;
 	HxAPNGChannelTypes color;
 	HXANode *node;
-	union {char text[5]; uint type;}type;
+	union {char text[5]; unsigned int type;}type;
 	size_t size, pos, chunk_length, bitmap_size;
 	unsigned char *data, *unprocessed_data, *image_data;
 	data = f_text_load(file_name, &size);
@@ -220,7 +215,7 @@ void hxa_png_crc_compute_table(void)
 }
 void hxa_png_crc_compute(unsigned char *output, unsigned char *read_buffer, int length)
 {
-	uint crc = 0xffffffffL, i;
+	unsigned int crc = 0xffffffffL, i;
  	if(!crc_table_computed)
 		hxa_png_crc_compute_table();
 	for(i = 0; i < length; i++)
@@ -232,10 +227,10 @@ void hxa_png_crc_compute(unsigned char *output, unsigned char *read_buffer, int 
 	output[4] = crc & 0xFF;
 }
 
-int hxa_save_png(unsigned char *pixels, uint channels, uint x, uint y, char *file_name)
+int hxa_save_png(unsigned char *pixels, unsigned int channels, unsigned int x, unsigned int y, char *file_name)
 {
 	FILE *file;
-	uint i, pixel_length, data_length, file_length, compression_left, write_pos, row_pos;
+	unsigned int i, pixel_length, data_length, file_length, compression_left, write_pos, row_pos;
 	unsigned short s;
 	char *data, channel_code[] = {0, 0, 4, 2, 6};
 	unsigned char header[] = {137,
