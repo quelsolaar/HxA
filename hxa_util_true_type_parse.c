@@ -159,7 +159,7 @@ void hxa_util_true_type_parse_save_source(HxAFont *font, char *name)
 	char file_name[64], capital[64];
 	FILE *f;
 	uint i, j, k, ref_count = 0, vertex_count = 0, size, pos = 0;
-	sprintf(file_name, "s_font_%s.c", name);
+	snprintf(file_name, 64, "s_font_%s.c", name);
 	f = fopen(file_name, "w");
 	fprintf(f, "#include <stdlib.h>\n");
 	fprintf(f, "#include \"forge.h\"\n\n");
