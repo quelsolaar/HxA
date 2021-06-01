@@ -100,7 +100,7 @@ int hxa_fbx_convert_layer_read(FBXRecord *record, HXALayerStack *layer_stack, ui
 						param->property[j].type == FBX_PROPERTY_TYPE_INT32 ||
 						param->property[j].type == FBX_PROPERTY_TYPE_INT64)
 					{
-						for(k = 0; k < param->name[k] != 0; k++)
+						for(k = 0; param->name[k] != 0; k++)
 						{
 							for(l = 0; index[l] != 0 && index[l] == param->name[k + l]; l++);
 							if(index[l] != 0)
