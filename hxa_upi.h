@@ -12,29 +12,43 @@ suppiorts HxA plugins. One Plugin AIP, multiple applications? Hell Yeah!!
 
 */
 
+/* qualifyer needed to expose a function to a library loader*/
+#ifdef _WIN32
+#define HxALibExport _declspec (dllexport)
+#else
+#define IMAGINE_ATOMIC_EMULATION
+#define ILibExport
+#endif
+
+/* Parameter types
+--------------------*/
 
 typedef enum{
-	HXA_IPT_BOOLEAN, /* checkbox */
-	HXA_IPT_SIGNED_INTEGER, /* int */
-	HXA_IPT_UNSIGNED_INTEGER, /* insigned integer */
-	HXA_IPT_DOUBLE_BOUND, /* double 0 - 1.0  (slider)*/
-	HXA_IPT_DOUBLE_UNBOUND, /* double */
-	HXA_IPT_POS_2D, /* 2D position */
-	HXA_IPT_POS_3D, /* 3D position */
-	HXA_IPT_VECTOR_2D, /* 2D vector */
-	HXA_IPT_VECTOR_3D, /* 3D vector */
-	HXA_IPT_MATRIX, /* 4x4 colum major transform Matrix*/
-	HXA_IPT_COLOR, /* RGB value */
-	HXA_IPT_TEXT, /* text input. Can be NULL */
-	HXA_IPT_PATH_READ, /* File path for reading. Can be NULL */
-	HXA_IPT_PATH_WRITE, /* File path for writing. Can be NULL */
-	HXA_IPT_SELECT, /* multi option select */
-	HXA_IPT_HXA, /* A HXA structure. Can be NULL */
-	HXA_IPT_COUNT,
-}HXAInterfaceParamType;
+	HXA_UPI_IPT_BOOLEAN, /* checkbox */
+	HXA_UPI_IPT_SIGNED_INTEGER, /* int */
+	HXA_UPI_IPT_UNSIGNED_INTEGER, /* insigned integer */
+	HXA_UPI_IPT_DOUBLE_BOUND, /* double 0 - 1.0  (slider)*/
+	HXA_UPI_IPT_DOUBLE_UNBOUND, /* double */
+	HXA_UPI_IPT_POS_2D, /* 2D position */
+	HXA_UPI_IPT_POS_3D, /* 3D position */
+	HXA_UPI_IPT_VECTOR_2D, /* 2D vector */
+	HXA_UPI_IPT_VECTOR_3D, /* 3D vector */
+	HXA_UPI_IPT_MATRIX, /* 4x4 colum major transform Matrix*/
+	HXA_UPI_IPT_COLOR, /* RGB value */
+	HXA_UPI_IPT_TEXT, /* text input. Can be NULL */
+	HXA_UPI_IPT_PATH_READ, /* File path for reading. Can be NULL */
+	HXA_UPI_IPT_PATH_WRITE, /* File path for writing. Can be NULL */
+	HXA_UPI_IPT_SELECT, /* multi option select */
+	HXA_UPI_IPT_HXA, /* A HXA structure. Can be NULL */
+	HXA_UPI_IPT_COUNT,
+}HXAUPIInterfaceParamType;
+
+
+/* Parameters descriptions
+---------------------------*/
 
 typedef struct{
-	HXAInterfaceParamType type; // what type of node is this? Stored in the file as a uint8.
+	HXAUPIInterfaceParamType type; // what type of node is this? Stored in the file as a uint8.
 	char *name; // What is the parameter named. keep it short so it fits in a UI.
 	char *description; // Longer desriptive text. Used for things like tooltips and generated documentation. 
 	/* the union below describes either the value of a parameter provided by the user at runtime, or the default value provided by the plugin at initialization. */
@@ -60,68 +74,37 @@ typedef struct{
 		}select;
 		HXAFile *hxa; // A pointer to a HxA structure. This structure is write protected and should not be modified or returned !!
 	}content;
-}HXAInterfaceParam;
+}HXAUPIInterfaceParam;
 
-/* This is the initialization function that a HxA plugin needs to implement. An applictaion that wants
+/* Plugin API 
+---------------*/
+
+/* This is the initialization function that a HxA UPI plugin needs to implement. An applictaion that wants
  to support HxA plugins will look for dunamicly loaded libraries that have this function implemented. 
 The functions main first parameter is a function pointer to a function used by the plugin to register
 all things needed to describe a plugins interface and execution. Se exampel plugin below.*/
 
-extern void hxa_plugin_library_initialize(void (*register_func)(HXAInterfaceParam *params, unsigned int param_count, char *name, char descrtiption, int has_output, HXAFile *(*execute_func)(HXAInterfaceParam *params, void *user), void *user));
+typedef struct{
+	HXAUPIInterfaceParam *params; /* parameters used by the plugin. */
+	unsigned int param_count; /* numer of params taken by the plugin. */
+	const char *name; /* name of the plugin. */
+	const char *descrtiption;  /* text string describing the functionality of the plugin. */
+	int has_output; /* does the plugin return a HxAFile Struct pointer. */
+	void *(*instance_create_func)(HXAUPIInterfaceParam *params, void *user); /* creates an instance of the plugin. May be NULL. */
+	void (*instance_destroy_func)(HXAUPIInterfaceParam *params, void *instance, void *user); /* destroys an instance of the plugin. May be NULL if instance_create_func is also NULL. */
+	int (*instance_update_func)(HXAUPIInterfaceParam *params, void *instance, void *user); /*tests if the instance needs updating. May be NULL. */
+	HXAFile *(*execute_func)(HXAUPIInterfaceParam *params, void *instance, void *user); /**/
+	void *user; /* user pointer that will be given to all above function pointers when called. */
+	void *library; /* internal handle for the loaded library, so that it can be unloaded. */
+}HxAUPIPlugin;
+
+extern void hxa_upi_plugin_library_initialize(void (*register_func)(HxAUPIPlugin *plugin));
 
 
+/* Reference host API 
+-----------------------*/
 
-// Example:
+extern HxAUPIPlugin *hxa_upi_host_load_library(char *path, unsigned int *plugin_count); /* Loads a single library file. */
+extern HxAUPIPlugin *hxa_upi_host_load_directory(char *path, unsigned int *plugin_count); /* loads all libraries in a specific path (like a plugin directory).*/
+extern void hxa_upi_host_unload_library(char *path, HxAUPIPlugin *plugins, unsigned int plugin_count); /* unloads all libraries and frees memory */
 
-// Function that implements the plugin.
-
-HXAFile *hxa_distort_execute_func(HXAInterfaceParam *params, void *user)
-{
-	// ... Code here that does what ever the plugin does. Reads inpuits from "params".
-}
-
-// Initialization funicon of a plugin. This library registers one plugin, but a library can contain many plugins.
-
-void hxa_plugin_library_initialize(void (*register_func)(HXAInterfaceParam *params, unsigned int param_count, char *name, char descrtiption, HXAFile *(*execute_func)(HXAInterfaceParam *params, void *user), void *user))
-{
-	HXAInterfaceParam *params;
-	params = malloc((sizeof *params) * 5);
-
-	params[0].name = "Input Geometry"; // name of the parameter. Expected to show up in the interface
-	params[0].description = "HxA structure that you want to distort"; // Longer description of the param, used for things luike tool tips.
-	params[0].type = HXA_IPT_HXA; // Parameter type, in this case a HxA Structure.  
-	params[0].content.hxa = NULL; // The default value. Values of type HxA is always NULL.
-
-	params[1].name = "Distortion"; // name of the parameter. Expected to show up in the interface.
-	params[1].description = "Amount of distortion"; // Longer description of the param, used for things luike tool tips.
-	params[1].type = HXA_IPT_DOUBLE_UNBOUND; // Parameter type, double value. Expected to be a type-in value in an interface 
-	params[1].content.double_value = 1.0; // Default value
-
-	params[2].name = "Scale"; // name of the parameter. Expected to show up in the interface.
-	params[2].description = "Scale of distortion"; // Longer description of the param, used for things luike tool tips.
-	params[2].type = HXA_IPT_DOUBLE_UNBOUND; // Parameter type, double value. Expected to be a type-in value in an interface 
-	params[2].content.double_value = 1.0; // Default value
-	
-	params[3].name = "Noise type"; // name of the parameter. Expected to show up in the interface.
-	params[3].description = "The noise function used to distort the geometry"; // Longer description of the param, used for things luike tool tips.
-	params[3].type = HXA_IPT_SELECT; // Selection of one of several modes. Expected to be apull down mnu or similar in a UI.
-	params[3].content.select.option_names = malloc((sizeof *params[2].select.option_names) * 3);
-	params[3].content.select.option_names[0] = "White noise"; // The names of the options you can select
-	params[3].content.select.option_names[1] = "Perlin noise";
-	params[3].content.select.option_names[2] = "Sin Wave";
-	params[3].content.select.option_count = 3; // The number of options available to select 
-	params[3].content.select.selected = 1; // Default mode set to Perlin
-
-	params[4].name = "Offset"; // name of the parameter. Expected to show up in the interface.
-	params[4].description = "Offset lets you move the position of the noise";
-	params[4].type = HXA_IPT_POS_3D; // 3D position. 3 values and/or a 3D manipulater UI.
-	params[4].content.point_3d[0] = 0.0; // Default value X
-	params[4].content.point_3d[1] = 0.0; // Default value Y
-	params[4].content.point_3d[2] = 0.0; // Default value Z
-
-	register_func(params, 5,  // The five param descriptions.
-				"Noise distortion", // name of the effect
-				"This node uses a 3D noise function to distort a 3D model.",  // help text describing the plugin
-				TRUE, // This plugin returns a HxA structure. Set to FALSE for plugins that output their processing by other means. (Like savers that save a file format)
-				hxa_distort_execute_func, NULL); // the fucntion that performs the plugins work.
-}
