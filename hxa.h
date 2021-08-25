@@ -139,6 +139,27 @@ typedef struct{
 }HXALayer;
 
 /* Layers stacks are arrays of layers where all the layers have the same number of entries (polygons, edges, vertices or pixels) */
+/*
+{
+	vertex_layer_stack.layers[0].name = HXA_CONVENTION_HARD_BASE_VERTEX_LAYER_NAME;
+	vertex_layer_stack.layers[0].data.float_data = {0, 0, 0, 1, 1, 1};
+	vertex_layer_stack.layers[0].components = 3;
+	
+	corner_layer_stack.layers[0].name = HXA_CONVENTION_HARD_BASE_REFERECNE_LAYER_NAME;
+	corner_layer_stack.layers[0].data.int32_data = {0, 1, -3};
+	corner_layer_stack.layers[0].components = 1;
+	corner_layer_stack.layers[1].name = "UV";
+	corner_layer_stack.layers[1].data.double_data = {1, 1, 0, 0, 1, 0};
+	corner_layer_stack.layers[1].components = 2;
+}
+{
+	HXANode *node;
+	node = hxa_util_load("file.hxa", TRUE);
+	hxa_util_triangulate_node(node, 3); 
+	node....
+}*/
+
+
 
 typedef struct{
 	hxa_uint32 layer_count; /* the number of loayers in a stack. */
