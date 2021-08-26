@@ -40,7 +40,7 @@ void hxa_upi_plugin_library_initialize(void (*register_func)(HxAUPIPlugin *plugi
 	plugin.instance_update_func = NULL;
 	plugin.execute_func = hxa_upi_plugin_load_wrapper;
 	plugin.user = NULL; /* user pointer that will be given to all above function pointers when called. */
-	params[0].type = HXA_IPT_PATH_READ;
+	params[0].type = HXA_UPI_IPT_PATH_READ;
 	params[0].name = "HxA File loader";
 	params[0].description = "HxA File loader"; 
 	params[0].content.path_read = NULL;
@@ -57,11 +57,11 @@ void hxa_upi_plugin_library_initialize(void (*register_func)(HxAUPIPlugin *plugi
 	plugin.instance_update_func = NULL;
 	plugin.execute_func = hxa_upi_plugin_save_wrapper;
 	plugin.user = NULL; /* user pointer that will be given to all above function pointers when called. */
-	params[0].type = HXA_IPT_HXA;
+	params[0].type = HXA_UPI_IPT_HXA;
 	params[0].name = "Input HxA";
 	params[0].description = "HxA structure thto be saved"; 
 	params[0].content.hxa = NULL;
-	params[1].type = HXA_IPT_PATH_WRITE;
+	params[1].type = HXA_UPI_IPT_PATH_WRITE;
 	params[1].name = "HxA Fie path";
 	params[1].description = "Local file path used to save HxA structure"; 
 	params[1].content.path_read = NULL;
