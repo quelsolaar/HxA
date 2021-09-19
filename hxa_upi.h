@@ -39,7 +39,8 @@ typedef enum{
 	HXA_UPI_IPT_PATH_READ, /* File path for reading. Can be NULL */
 	HXA_UPI_IPT_PATH_WRITE, /* File path for writing. Can be NULL */
 	HXA_UPI_IPT_SELECT, /* multi option select */
-	HXA_UPI_IPT_HXA, /* A HXA structure. Can be NULL */
+	HXA_UPI_IPT_HXA_READ, /* A HXA structure to be read only. Can be NULL */
+	HXA_UPI_IPT_HXA_CONSUME, /* A HXA structure, that will be read and freed/returned by the plugin. Can be NULL */
 	HXA_UPI_IPT_COUNT,
 }HXAUPIInterfaceParamType;
 
