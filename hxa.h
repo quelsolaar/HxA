@@ -66,6 +66,7 @@ typedef unsigned int hxa_uint32;
 typedef signed long long hxa_int64;
 typedef unsigned long long hxa_uint64;
 
+#define HXA_NAME_MAX_LENGTH 256 //
 /*
 HaX stores 3 types of nodes: 
 */
@@ -77,16 +78,6 @@ typedef enum{
 	HXA_NT_COUNT = 3 // the number of different nodes that can be stored in the file.
 }HXANodeType;
 
-/*
-HaX stores layer data in the following types: 
-*/
-typedef enum{
-	HXA_LDT_UINT8 = 0, /* 8bit unsigned integer, */
-	HXA_LDT_INT32 = 1, /* 32bit signed integer */
-	HXA_LDT_FLOAT = 2, /* 32bit IEEE 754 floating point value */
-	HXA_LDT_DOUBLE = 3, /* 64bit IEEE 754 floating point value */
-	HXA_LDT_COUNT = 4 /* number of types supported by layers */
-}HXALayerDataType;
 /*
 Pixel data is arranged in the following configurations
 */
@@ -107,8 +98,6 @@ typedef enum{
 	HXA_MDT_COUNT = 6
 }HXAMetaDataType;
 
-#define HXA_NAME_MAX_LENGTH 256 //
-
 typedef struct{
 	char name[HXA_NAME_MAX_LENGTH]; // name of the meta data value.
 	HXAMetaDataType type; // type of value. Stored in the file as a uint8.
@@ -124,11 +113,22 @@ typedef struct{
 }HXAMeta; /* meta data key/value store */
 
 
+/*
+HaX stores layer data in the following types: 
+*/
+typedef enum{
+	HXA_LDT_UINT8 = 0, /* 8bit unsigned integer, */
+	HXA_LDT_INT32 = 1, /* 32bit signed integer */
+	HXA_LDT_FLOAT = 2, /* 32bit IEEE 754 floating point value */
+	HXA_LDT_DOUBLE = 3, /* 64bit IEEE 754 floating point value */
+	HXA_LDT_COUNT = 4 /* number of types supported by layers */
+}HXALayerDataType;
+
 /* Layers are arrays of data used to store geometry and pixel data */
 
 typedef struct{
 	char name[HXA_NAME_MAX_LENGTH]; // name of the layer. List of predefined names for common usages like uv, reference, blendshapes, weights ...
-	hxa_uint8 components; // 2 for uv, 3 for xyz or rgb, 4 for rgba;
+	hxa_uint8 components; // 2 for uv, 3 for xyz or rgb, 4 for rgba. from 1 - 255 is legal.
 	HXALayerDataType type; // Stored in the file as a uint8.
 	union{
 		hxa_uint8 *uint8_data;
@@ -194,7 +194,7 @@ typedef struct{
 
 typedef struct{
 //	hxa_uint32 magic_number; The file begins with a file identifyer. it always has to be the 4 bytes "HxA", See definition of HAX_MAGIC_NUMBER. Since the magic number is always the same we dont store it in this structure even if it is always precent in files.
-	hxa_uint8 version;
+	hxa_uint8 version; // HXA_VERSION_FORMAT
 	hxa_uint32 node_count; // number of nodes in the file
 	HXANode *node_array; // array of nodes.
 }HXAFile;
@@ -227,7 +227,7 @@ If you use HxA for something not coverd by the conventiosns but need a conventio
 /* geometry layers */
 
 #define HXA_CONVENTION_SOFT_LAYER_SEQUENCE0 "sequence"
-#define HXA_CONVENTION_SOFT_LAYER_NAME_UV0 "uv"
+#define HXA_CONVENTION_SOFT_LAYER_UV0 "uv"
 #define HXA_CONVENTION_SOFT_LAYER_NORMALS "normal"
 #define HXA_CONVENTION_SOFT_LAYER_BINORMAL "binormal"
 #define HXA_CONVENTION_SOFT_LAYER_TANGENT "tangent"
@@ -236,10 +236,10 @@ If you use HxA for something not coverd by the conventiosns but need a conventio
 #define HXA_CONVENTION_SOFT_LAYER_SELECTION "select"
 #define HXA_CONVENTION_SOFT_LAYER_SKIN_WEIGHT "skining_weight"
 #define HXA_CONVENTION_SOFT_LAYER_SKIN_REFERENCE "skining_reference"
-#define HXA_CONVENTION_SOFT_LAYER_SKIN_REFERENCE "skining_reference"
 #define HXA_CONVENTION_SOFT_LAYER_BLENDSHAPE "blendshape"
 #define HXA_CONVENTION_SOFT_LAYER_ADD_BLENDSHAPE "addblendshape"
 #define HXA_CONVENTION_SOFT_LAYER_MATERIAL_ID "material"
+#define HXA_CONVENTION_SOFT_LAYER_GROUP_ID "group"
 
 /* Image layers */
 
