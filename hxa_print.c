@@ -15,11 +15,11 @@ void hxa_print_meta_data(HXAMeta *meta, unsigned int length, unsigned int tab_co
 	{
 		case HXA_MDT_INT64 :
 			for(i = 0; i < length; i++)
-				printf( "%lli", meta->value.int64_value[i]);
+				printf(" %lli", meta->value.int64_value[i]);
 		break; 
 		case HXA_MDT_DOUBLE :
 			for(i = 0; i < length; i++)
-				printf( "%f", meta->value.double_value[i]);
+				printf(" %f", meta->value.double_value[i]);
 		break; 
 		case HXA_MDT_NODE :
 			for(i = 0; i < length; i++)
@@ -33,7 +33,7 @@ void hxa_print_meta_data(HXAMeta *meta, unsigned int length, unsigned int tab_co
 				printf(" %x", meta->value.bin_value[i]);
 		break; 
 		case HXA_MDT_META :
-			printf(" %s", meta->value.text_value);
+			printf("\n");
 			for(i = 0; i < meta->array_length; i++)
 				hxa_print_meta(&((HXAMeta *)meta->value.array_of_meta)[i], tab_count + 1, data);
 		break; 
@@ -61,14 +61,14 @@ void hxa_print_meta_find(HXAFile *file, char *key)
 void hxa_print_meta(HXAMeta *meta, unsigned int tab_count, unsigned int data)
 {
 	char *type_name[] = {"HXA_MDT_INT64", "HXA_MDT_DOUBLE", "HXA_MDT_NODE", "HXA_MDT_TEXT", "HXA_MDT_BINARY", "HXA_MDT_META"};
-	char tabs[8] = {'\t', '\t', '\t', '\t', '\t', '\t', '\t', 0};
+	char tabs[16] = {'\t', '\t', '\t', '\t', '\t', '\t', '\t', '\t', '\t', '\t', '\t', '\t', '\t', '\t', '\t', 0};
 	unsigned int i, length;
-	if(tab_count < 7)
+	if(tab_count < 15)
 		tabs[tab_count] = 0;
-	printf("%s-Meta name: \"%s\"\n", tabs, meta->name);
-	printf("%s-Meta type: %s\n", tabs, type_name[meta->type]);
-	printf("%s-Meta count: %u\n", tabs, meta->array_length);
-	printf("%s-Meta data:", tabs);
+	if(meta->array_length == 1)
+		printf("%s-Meta %s \"%s\" :", tabs, type_name[meta->type], meta->name);
+	else
+		printf("%s-Meta %s \"%s\"[%u] :", tabs, type_name[meta->type], meta->name, meta->array_length);
 	length = meta->array_length;
 	if(!data && length > 16)
 		length = 16;
