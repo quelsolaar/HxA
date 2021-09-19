@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "hxa.h"
+#include "forge.h"we
 
 #define FALSE 0
 #define TRUE !FALSE
@@ -368,7 +369,7 @@ HXAFile *hxa_load(char *file_name, int silent)
 				size = node[i].content.image.resolution[0] * node[i].content.image.resolution[1] * node[i].content.image.resolution[2];	
 				if(node[i].content.image.type == HXA_IT_CUBE_IMAGE)
 					size *= 6;
-				if(!hxa_load_layer_stack(f, file_name, &node[i].content.geometry.face_stack, size, silent))
+				if(!hxa_load_layer_stack(f, file_name, &node[i].content.image.image_stack, size, silent))
 				{
 					hxa_util_free_file(file);
 					return NULL;
