@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "hxa.h"
-#include "forge.h"we
+#include "forge.h"
 
 #define FALSE 0
 #define TRUE !FALSE

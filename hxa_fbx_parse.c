@@ -534,7 +534,7 @@ uint fbx_load_record(FBXRecord *record, uint8 *data, uint read_pos, uint version
 				{
 					uint output_length;
 					output_length = compressed_length * 4;
-					tinf_init();
+					//tinf_init();
 					k = 0;
 					while(TRUE)
 					{

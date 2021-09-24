@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "tinf.h"
+#include "forge.h"
 
 typedef enum{
 	FBX_PROPERTY_TYPE_BOOLEAN,

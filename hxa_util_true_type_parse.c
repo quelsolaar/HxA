@@ -11,7 +11,7 @@ typedef unsigned int uint32;
 typedef signed short int16;
 typedef unsigned short uint16;
 typedef unsigned char uint8;
-
+typedef unsigned char boolean;
 
 typedef struct{
 	float *vertex_array;
@@ -20,6 +20,9 @@ typedef struct{
 	unsigned int *ref;
 	unsigned int *material;
 }ProcessOutput;
+
+
+boolean f_text_compare(char *text_a, char *text_b);
 
 extern void mo_edit_process_deploy(float *vertex_array, unsigned int *loop_sizes, unsigned int loop_count, ProcessOutput *output);
 
