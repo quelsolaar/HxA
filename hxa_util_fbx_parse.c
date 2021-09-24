@@ -1,8 +1,13 @@
+#define _CRT_SECURE_NO_WARNINGS
+#pragma warning(disable:4996)
+#pragma warning(disable:4703)
+#pragma warning(disable:4996)
+#pragma warning(disable:4664)
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "hxa.h"
-#include "hxa_fbx_internal.h"
+#include "hxa_util_fbx_internal.h"
 
 
 typedef signed char int8;
@@ -319,7 +324,7 @@ void fbx_unpack_uint32_big(uint32 *output, uint8 *input)
 void fbx_unpack_uint16_big(uint16 *output, uint8 *input)
 {
 	uint16 data;
-	data |= ((uint16) input[1]) << 8;
+	data = ((uint16) input[1]) << 8;
 	data |= (uint16) input[0];
 	*output = data;
 }
@@ -349,10 +354,10 @@ void fbx_record_print(FBXRecord *record, uint generation)
 	for(i = 0; i < generation && i < 64 - 1; i++)
 		tabs[i] = ' ';
 	tabs[i] = 0;
-	printf("%send_ofset %u\n", tabs, record->end_ofset);
+	printf("%send_ofset %llu\n", tabs, record->end_ofset);
 
-	printf("%sproperty_count %u\n", tabs, record->property_count);
-	printf("%sproperty_list_length %u\n", tabs, record->property_list_length);
+	printf("%sproperty_count %llu\n", tabs, record->property_count);
+	printf("%sproperty_list_length %llu\n", tabs, record->property_list_length);
 	printf("%sname_length %u\n", tabs, (uint)record->name_length);
 	printf("%sname %s\n", tabs, record->name);
 	for(i = 0; i < record->property_count; i++)
@@ -646,6 +651,31 @@ uint fbx_load_record(FBXRecord *record, uint8 *data, uint read_pos, uint version
 	return read_pos;
 }
 
+
+char *hxa_util_fbx_file_load(char *file_name, size_t *size)
+{
+	char *buffer;
+	uint allocation, i;
+	FILE *f;
+	f = fopen(file_name, "rb");
+	if(f == NULL)
+	{
+		return NULL;
+	}
+	fseek(f, 0, SEEK_END);
+	allocation = ftell(f);
+	rewind(f);
+	buffer = malloc(allocation + 1);
+	memset(buffer, 0, allocation + 1);
+	fread(buffer, 1, allocation, f);
+	i = ftell(f);
+	fclose(f);
+	buffer[allocation] = 0;
+	if(size != NULL)
+		*size = allocation;
+	return buffer;
+}
+
 HXAFile *hxa_util_fbx_load(char *file_name, HXAFile *hxa_file)
 {
 	uint levels[1024], level_end[1024];
@@ -655,7 +685,7 @@ HXAFile *hxa_util_fbx_load(char *file_name, HXAFile *hxa_file)
 	uint8 *file;
 //	freopen("output.txt", "w", stdout);
 //	setbuf(stdout, NULL);
-	file = f_text_load(file_name, &size);
+	file = hxa_util_fbx_file_load(file_name, &size);
 	if(file == NULL)
 		return NULL;
 	record.end_ofset = size;

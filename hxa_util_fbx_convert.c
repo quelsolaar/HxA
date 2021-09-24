@@ -1,13 +1,13 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "hxa.h"
-#include "hxa_fbx_internal.h"
 #define _CRT_SECURE_NO_WARNINGS
 #pragma warning(disable:4996)
 #pragma warning(disable:4703)
 #pragma warning(disable:4996)
 #pragma warning(disable:4664)
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "hxa.h"
+#include "hxa_util_fbx_internal.h"
 
 typedef signed char int8;
 typedef unsigned char uint8;
@@ -62,7 +62,7 @@ int hxa_fbx_convert_property_test(FBXRecord *record, char *property_name)
 int hxa_fbx_convert_layer_read(FBXRecord *record, HXALayerStack *layer_stack, uint length)
 {
 	char *conversion_from[] = {"Normals", "Binormals", "Tangents", "Colors", "UV", "Smoothing", "Material", "PolygonGroup", "EdgeCrease"};
-	char *conversion_to[] = {HXA_CONVENTION_SOFT_LAYER_NORMALS, HXA_CONVENTION_SOFT_LAYER_BINORMAL, HXA_CONVENTION_SOFT_LAYER_TANGENT, HXA_CONVENTION_SOFT_LAYER_COLOR, HXA_CONVENTION_SOFT_LAYER_NAME_UV0, "smoothing", HXA_CONVENTION_SOFT_LAYER_MATERIAL_ID, "group", HXA_CONVENTION_SOFT_LAYER_CREASES};
+	char *conversion_to[] = {HXA_CONVENTION_SOFT_LAYER_NORMALS, HXA_CONVENTION_SOFT_LAYER_BINORMAL, HXA_CONVENTION_SOFT_LAYER_TANGENT, HXA_CONVENTION_SOFT_LAYER_COLOR, HXA_CONVENTION_SOFT_LAYER_UV0, "smoothing", HXA_CONVENTION_SOFT_LAYER_MATERIAL_ID, "group", HXA_CONVENTION_SOFT_LAYER_CREASES};
 	char *index = "Index";
 	HXALayer *layer;
 	FBXProperty *p, *index_property = NULL;
