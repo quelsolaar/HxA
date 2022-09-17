@@ -163,10 +163,10 @@ int hxa_load_meta(FILE *f, char *file_name, HXAMeta **meta, hxa_uint32 *count, i
 					return FALSE;
 			break;
 			case HXA_MDT_TEXT :
-				m->value.text_value = malloc(sizeof(char) * (m->array_length));
+				m->value.text_value = malloc(sizeof(char) * (m->array_length+1));
 				if(!hxa_load_data(f, m->value.text_value, sizeof(hxa_uint8) * m->array_length, file_name, silent))
 					return FALSE;
-				m->value.text_value[m->array_length - 1] = 0;
+				m->value.text_value[m->array_length] = 0;
 			break;
 			case HXA_MDT_BINARY :
 				m->value.bin_value = malloc(sizeof(char) * (m->array_length));
@@ -447,14 +447,14 @@ int hxa_save(char *file_name, HXAFile *data)
 	FILE *f;
 	HXANode *node;
 	hxa_uint8 type;
-	hxa_uint32 version;
+	hxa_uint8 version;
 	unsigned int i, size, dimentions;
 	f = fopen(file_name, "wb");
 	if(f == NULL)
 		return FALSE;
 	fwrite("HxA", 4, 1, f);
 	version = HXA_VERSION_FORMAT;
-	fwrite(&version, sizeof(hxa_uint32), 1, f);
+	fwrite(&version, sizeof(hxa_uint8), 1, f);
 	fwrite(&data->node_count, sizeof(hxa_uint32), 1, f);
 	node = data->node_array;
 	for(i = 0; i < data->node_count; i++)

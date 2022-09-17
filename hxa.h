@@ -99,7 +99,8 @@ typedef enum{
 }HXAMetaDataType;
 
 typedef struct{
-	char name[HXA_NAME_MAX_LENGTH]; // name of the meta data value.
+	hxa_uint8 name_length;  // length of the name, stored as a uint8.
+    char name[HXA_NAME_MAX_LENGTH]; // name of the meta data value.
 	HXAMetaDataType type; // type of value. Stored in the file as a uint8.
 	hxa_uint32 array_length; // how many values are stored / the length of the stored text string (excluding termination)
 	union{
@@ -190,7 +191,7 @@ typedef struct{
 	}content;
 }HXANode;
 
-#define HAX_MAGIC_NUMBER (*(hxa_uint32)"HaX") // 4290632
+#define HXA_MAGIC_NUMBER (*(hxa_uint32)"HxA") // 4290632
 
 typedef struct{
 //	hxa_uint32 magic_number; The file begins with a file identifyer. it always has to be the 4 bytes "HxA", See definition of HAX_MAGIC_NUMBER. Since the magic number is always the same we dont store it in this structure even if it is always precent in files.

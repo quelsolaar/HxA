@@ -471,7 +471,7 @@ HXAFile *hxa_util_obj_load(char *file_name)
 						write_group[node->content.geometry.face_count] = current_group;
 					node->content.geometry.face_count++;
 					f_debug_memory();
-
+                    i--;
 				}
 			}else if(buffer[i] == 's' && buffer[i + 1] <= ' ') /* we have groups */
 			{
