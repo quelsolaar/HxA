@@ -66,7 +66,7 @@ typedef unsigned int hxa_uint32;
 typedef signed long long hxa_int64;
 typedef unsigned long long hxa_uint64;
 
-#define HXA_NAME_MAX_LENGTH 256 //
+#define HXA_NAME_MAX_LENGTH 255 //
 /*
 HaX stores 3 types of nodes: 
 */
