@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "hxa.h"
-#include "forge.h"we
+// #include "forge.h"
 
 #define FALSE 0
 #define TRUE !FALSE
@@ -189,7 +189,7 @@ int hxa_load_meta(FILE *f, char *file_name, HXAMeta **meta, hxa_uint32 *count, i
 
 int hxa_load_layer_stack(FILE *f, char *file_name, HXALayerStack *stack, unsigned int length,  int silent)
 {
-	const type_sizes[] = {sizeof(hxa_uint8), sizeof(hxa_uint32), sizeof(float), sizeof(double)};
+	const unsigned int type_sizes[] = {sizeof(hxa_uint8), sizeof(hxa_uint32), sizeof(float), sizeof(double)};
 	hxa_uint32 stack_count, i;	
 	hxa_uint8 type;
 	size_t size;
@@ -423,7 +423,7 @@ void hxa_save_meta(FILE *f,  HXAMeta *meta, hxa_uint32 count)
 
 void hxa_save_layer_stack(FILE *f, HXALayerStack *stack, unsigned int length)
 {
-	const type_sizes[] = {sizeof(hxa_uint8), sizeof(hxa_uint32), sizeof(float), sizeof(double)};
+	const unsigned int type_sizes[] = {sizeof(hxa_uint8), sizeof(hxa_uint32), sizeof(float), sizeof(double)};
 	unsigned int i, j;
 	hxa_uint8 name_lenght, type;
 	size_t size;
