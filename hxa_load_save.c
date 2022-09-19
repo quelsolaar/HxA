@@ -245,7 +245,7 @@ HXAFile *hxa_load(char *file_name, int silent)
 			printf("HXA Error: File %s is not a HxA file (incorrect magic number)\n", file_name);
 		return NULL;
 	}
-	if(!hxa_load_data(f, &version, sizeof(hxa_uint32), file_name, silent))
+	if(!hxa_load_data(f, &version, sizeof(hxa_uint8), file_name, silent))
 		return NULL;
 	file = malloc(sizeof *file);
 	file->version = version;
