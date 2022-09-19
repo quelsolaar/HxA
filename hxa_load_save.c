@@ -227,8 +227,8 @@ HXAFile *hxa_load(char *file_name, int silent)
 	HXAFile *file;
 	HXANode *node;
 	unsigned int i, dimentions;
-	hxa_uint32 magic_number, node_count, version;
-	hxa_uint8 node_type;
+	hxa_uint32 magic_number, node_count;
+	hxa_uint8 version, node_type;
 	size_t size;
 	f = fopen(file_name, "rb");
 	if(f == NULL)
@@ -245,7 +245,7 @@ HXAFile *hxa_load(char *file_name, int silent)
 			printf("HXA Error: File %s is not a HxA file (incorrect magic number)\n", file_name);
 		return NULL;
 	}
-	if(!hxa_load_data(f, &version, sizeof(hxa_uint32), file_name, silent))
+	if(!hxa_load_data(f, &version, sizeof(hxa_uint8), file_name, silent))
 		return NULL;
 	file = malloc(sizeof *file);
 	file->version = version;
