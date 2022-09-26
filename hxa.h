@@ -128,7 +128,8 @@ typedef enum{
 /* Layers are arrays of data used to store geometry and pixel data */
 
 typedef struct{
-	char name[HXA_NAME_MAX_LENGTH]; // name of the layer. List of predefined names for common usages like uv, reference, blendshapes, weights ...
+	hxa_uint8 name_length;
+    char name[HXA_NAME_MAX_LENGTH]; // name of the layer. List of predefined names for common usages like uv, reference, blendshapes, weights ...
 	hxa_uint8 components; // 2 for uv, 3 for xyz or rgb, 4 for rgba. from 1 - 255 is legal.
 	HXALayerDataType type; // Stored in the file as a uint8.
 	union{
