@@ -99,7 +99,7 @@ typedef enum{
 }HXAMetaDataType;
 
 typedef struct{
-	hxa_uint8 name_length;  // length of the name, stored as a uint8.
+	// hxa_uint8 name_length;  // It's not used anywhere outside of read and write functions, so we don't need it in the struct, but it's a good idea to keep its existence in mind.
     char name[HXA_NAME_MAX_LENGTH]; // name of the meta data value.
 	HXAMetaDataType type; // type of value. Stored in the file as a uint8.
 	hxa_uint32 array_length; // how many values are stored / the length of the stored text string (excluding termination)
@@ -128,7 +128,7 @@ typedef enum{
 /* Layers are arrays of data used to store geometry and pixel data */
 
 typedef struct{
-	hxa_uint8 name_length;
+	// hxa_uint8 name_length;  // Same as name_length in HxA Meta
     char name[HXA_NAME_MAX_LENGTH]; // name of the layer. List of predefined names for common usages like uv, reference, blendshapes, weights ...
 	hxa_uint8 components; // 2 for uv, 3 for xyz or rgb, 4 for rgba. from 1 - 255 is legal.
 	HXALayerDataType type; // Stored in the file as a uint8.
