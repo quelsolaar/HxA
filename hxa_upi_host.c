@@ -10,6 +10,7 @@
 #include <tchar.h>
 #include <wchar.h>
 
+#define HXA_UPI_DEBUG_PRINT
 #define HXA_UPI_WINDOWS_PATH_LENGHT_MAX (256 * 128 - 1)
 
 #undef UNICODE
@@ -36,6 +37,109 @@ typedef unsigned int uint;
 HxAUPIPlugin *hxa_upi_host_temp_loaded_plugins = NULL;
 unsigned int hxa_upi_host_temp_loaded_plugin_count = 0;
 void *hxa_upi_host_temp_loaded_library = NULL;
+
+
+#define HXA_UPI_NXT	0x80
+#define HXA_UPI_SEQ2 0xc0
+#define HXA_UPI_SEQ3 0xe0
+#define HXA_UPI_SEQ4 0xf0
+#define HXA_UPI_SEQ5 0xf8
+#define HXA_UPI_SEQ6 0xfc
+#define HXA_UPI_BOM	0xfeff
+
+unsigned int hxa_upi_utf8_to_uint32(char *c, uint *pos)
+{
+	uint i, bits, character_count = 1, high;
+	unsigned int out;
+
+	if((c[*pos] & 0x80) == 0)
+		high = (wchar_t)c[*pos];
+	else if((c[*pos] & 0xe0) == HXA_UPI_SEQ2)
+	{
+		character_count = 2;
+		high = (wchar_t)(c[*pos] & 0x1f);
+	}else if((c[*pos] & 0xf0) == HXA_UPI_SEQ3)
+	{
+		character_count = 3;
+		high = (wchar_t)(c[*pos] & 0x0f);
+	}else if((c[*pos] & 0xf8) == HXA_UPI_SEQ4)
+	{
+		character_count = 4;
+		high = (wchar_t)(c[*pos] & 0x07);
+	}else if((c[*pos] & 0xfc) == HXA_UPI_SEQ5)
+	{
+		character_count = 5;
+		high = (wchar_t)(c[*pos] & 0x03);
+	}else if((c[*pos] & 0xfe) == HXA_UPI_SEQ6)
+	{
+		character_count = 6;
+		high = (wchar_t)(c[*pos] & 0x01);
+	}else
+	{
+		(*pos)++;
+		return 0;
+	}
+	out = 0;
+	bits = 0;
+	for(i = 1; i < character_count; i++)
+	{
+		out |= (wchar_t)(c[character_count - i] & 0x3f) << bits;
+		bits += 6;		/* 6 low bits in every byte */
+	}
+	out |= high << bits;
+	(*pos) += character_count;
+	return out;
+}
+
+uint hxa_upi_uint32_to_utf8(unsigned int character, char *out)
+{
+	unsigned char bytes[4];
+	bytes[0] = (character >> 24) & 0xFF;
+	bytes[1] = (character >> 16) & 0xFF;
+	bytes[2] = (character >> 8) & 0xFF;
+	bytes[3] = character & 0xFF;
+	if(character <= 0x0000007f)
+	{
+		out[0] = bytes[3];
+		return 1;
+	}else if(character <= 0x000007ff)
+	{
+		out[1] = HXA_UPI_NXT | bytes[3] & 0x3f;
+		out[0] = HXA_UPI_SEQ2 | (bytes[3] >> 6) | ((bytes[2] & 0x07) << 2);
+		return 2;
+	}else if(character <= 0x0000ffff)
+	{
+		out[2] = HXA_UPI_NXT | bytes[3] & 0x3f;
+		out[1] = HXA_UPI_NXT | (bytes[3] >> 6) | ((bytes[2] & 0x0f) << 2);
+		out[0] = HXA_UPI_SEQ3 | ((bytes[2] & 0xf0) >> 4);
+		return 3;
+	}else if(character <= 0x001fffff)
+	{
+		out[3] = HXA_UPI_NXT | bytes[3] & 0x3f;
+		out[2] = HXA_UPI_NXT | (bytes[3] >> 6) | ((bytes[2] & 0x0f) << 2);
+		out[1] = HXA_UPI_NXT | ((bytes[2] & 0xf0) >> 4) | ((bytes[1] & 0x03) << 4);
+		out[0] = HXA_UPI_SEQ4 | ((bytes[1] & 0x1f) >> 2);
+		return 4;
+	}else if(character <= 0x03ffffff)
+	{
+		out[4] = HXA_UPI_NXT | bytes[3] & 0x3f;
+		out[3] = HXA_UPI_NXT | (bytes[3] >> 6) | ((bytes[2] & 0x0f) << 2);
+		out[2] = HXA_UPI_NXT | ((bytes[2] & 0xf0) >> 4) | ((bytes[1] & 0x03) << 4);
+		out[1] = HXA_UPI_NXT | (bytes[1] >> 2);
+		out[0] = HXA_UPI_SEQ5 | bytes[0] & 0x03;
+		return 5;
+	}else /* if (*w <= 0x7fffffff) */
+	{
+		out[5] = HXA_UPI_NXT | bytes[3] & 0x3f;
+		out[4] = HXA_UPI_NXT | (bytes[3] >> 6) | ((bytes[2] & 0x0f) << 2);
+		out[3] = HXA_UPI_NXT | (bytes[2] >> 4) | ((bytes[1] & 0x03) << 4);
+		out[2] = HXA_UPI_NXT | (bytes[1] >> 2);
+		out[1] = HXA_UPI_NXT | bytes[0] & 0x3f;
+		out[0] = HXA_UPI_SEQ6 | ((bytes[0] & 0x40) >> 6);
+		return 6;
+	}
+}
+
 
 void hxa_upi_host_register_func(HxAUPIPlugin *plugin)
 {
@@ -64,10 +168,12 @@ void hxa_upi_host_load_library_internal(char *path)
 #endif
 	if(hxa_upi_host_temp_loaded_library == NULL)
 	{
+#ifdef HXA_UPI_DEBUG_PRINT
 #ifdef _WIN32
 		printf("HxA UPI ERROR: library %s not found. Windows error code: %u\n", path, GetLastError());
 #else
 		printf("HxA UPI ERROR: library %s not found.\n", path);
+#endif
 #endif
 		return NULL;
 	}
@@ -78,7 +184,9 @@ void hxa_upi_host_load_library_internal(char *path)
 #endif
 	if(hxa_upi_plugin_library_initialize == NULL)
 	{
+#ifdef HXA_UPI_DEBUG_PRINT
 		printf("HxA UPI ERROR: imagine_lib_main not found in %s.\n", path);
+#endif
 		hxa_upi_internal_lib_unload(hxa_upi_host_temp_loaded_library);
 		return NULL;
 	}
@@ -139,7 +247,7 @@ DIR *hxa_upi_opendir(char *path)
 	}else
 	{		
 		for(i = pos = 0; i < HXA_UPI_WINDOWS_PATH_LENGHT_MAX - 5 && path[pos] != 0; i++)
-			unicode_path[i] = f_utf8_to_uint32(path, &pos);
+			unicode_path[i] = hxa_upi_utf8_to_uint32(path, &pos);
 	}
 	for(pos = 0; post_fix[pos] != 0; i++)
 		unicode_path[i] = (wchar_t)post_fix[pos++];
@@ -167,7 +275,7 @@ idirent *hxa_upi_readdir(DIR *dir)
 	if(FindNextFileW(dir->handle, &dir->data) != TRUE)
 		return NULL;
 	for(i = pos = 0; dir->data.cFileName[i] != 0 && pos < HXA_UPI_WINDOWS_PATH_LENGHT_MAX - 6; i++)
-		pos += f_uint32_to_utf8(dir->data.cFileName[i], &dir->ent.d_name[pos]);
+		pos += hxa_upi_uint32_to_utf8(dir->data.cFileName[i], &dir->ent.d_name[pos]);
 	dir->ent.d_name[pos] = 0;
 	return &dir->ent;
 	
@@ -181,6 +289,18 @@ idirent *hxa_upi_readdir(DIR *dir)
 #define hxa_upi_readdir readdir
 #endif
 
+int hxa_upi_host_filter(char *path, char *filter)
+{
+	unsigned int i, j;
+	for(i = 0; path[i] != 0; i++)
+	{
+		for(j = 0; path[i + j] != 0 && filter[j] != 0 && (filter[j] == path[i + j] || filter[j] + 32 == path[i + j]); j++);
+		if(filter[j] == 0)
+			return TRUE;
+	}
+	return FALSE;
+}
+
 HxAUPIPlugin *hxa_upi_host_load_directory(char *path, unsigned int *plugin_count)
 {
 	DIR *d;
@@ -189,29 +309,34 @@ HxAUPIPlugin *hxa_upi_host_load_directory(char *path, unsigned int *plugin_count
 	unsigned int i, start;
 	hxa_upi_host_temp_loaded_plugins = NULL;
 	hxa_upi_host_temp_loaded_plugin_count = 0;
-	for(start = 0; start < 1024 - 1 && path[start] != 0; start)
+	for(start = 0; start < 1024 - 1 && path[start] != 0; start++)
 		p[start] = path[start];
-	d = opendir(path);
+	d = hxa_upi_opendir(path);
 	if(d != NULL)
 	{
-		ent = readdir(d);
+		ent = hxa_upi_readdir(d);
 		if(ent != NULL)
 		{
 			while(TRUE)
 			{	
-				for(i = 0; i + start < 1024 - 1 && ent->d_name[i] != 0; i++)
-					p[start + i] = ent->d_name[i];
-				if(i + start < 1024 - 1)
-				{
-					p[start + i] = 0;
-					hxa_upi_host_load_library_internal(p);
+				if(hxa_upi_host_filter(ent->d_name, ".DLL") ||
+					hxa_upi_host_filter(ent->d_name, ".SO") ||
+					hxa_upi_host_filter(ent->d_name, ".LIB"))
+				{ 
+					for(i = 0; i + start < 1024 - 1 && ent->d_name[i] != 0; i++)
+						p[start + i] = ent->d_name[i];
+					if(i + start < 1024 - 1)
+					{
+						p[start + i] = 0;
+						hxa_upi_host_load_library_internal(p);
+					}
 				}
-				ent = readdir(d);
+				ent = hxa_upi_readdir(d);
 				if(ent == NULL)
 					break;
 			}
 		}
-		closedir(d);
+		hxa_upi_closedir(d);
 	}
 	*plugin_count = hxa_upi_host_temp_loaded_plugin_count;
 	return hxa_upi_host_temp_loaded_plugins;

@@ -7,17 +7,24 @@
 #define FALSE 0
 #define TRUE !FALSE
 
-int hxa_convert_param_to_int(char *string, unsigned int *output)
+int hxa_convert_param_to_int(char *string, int *output)
 {
+	unsigned int i = 0;
 	*output = 0;
-	if(string[0] < '0' && string[0] > '9')
-		return FALSE;
-	while(string[0] < '0' && string[0] > '9')
+	if(string[i] == '-')
+		i++;
+
+	if(string[i] < '0' && string[i] > '9')
+		return 0;
+	*output += (unsigned int)string[i++] - (unsigned int)'0';
+	while(string[i] < '0' && string[i] > '9')
 	{
 		*output *= 10;
-		*output += (unsigned int)string[0] - (unsigned int)'0';
+		*output += (unsigned int)string[i++] - (unsigned int)'0';
 	}
-	return TRUE;
+	if(string[0] == '-')
+		*output = -*output;
+	return i;
 }
 
 int hxa_type_test(char *path, char *type)
@@ -36,7 +43,7 @@ int hxa_type_test(char *path, char *type)
 	return FALSE;
 }
 
-extern void hxa_load_png(HXAFile *file, char *file_name);
+extern int hxa_load_png(HXAFile *file, char *file_name);
 extern void hxa_type_convert_gen();
 
 int main(int argc, char **argv)
