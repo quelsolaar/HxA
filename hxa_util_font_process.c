@@ -4,6 +4,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h> 
+#include "forge.h"
 
 #define MO_EDIT_PROCESS_LINE_SWIGGLE 0.02
 

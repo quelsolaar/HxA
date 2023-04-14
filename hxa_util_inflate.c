@@ -1,4 +1,6 @@
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
 #define FALSE 0
 #define TRUE !FALSE
