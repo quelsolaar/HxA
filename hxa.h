@@ -190,11 +190,11 @@ typedef struct{
 	}content;
 }HXANode;
 
-#define HAX_MAGIC_NUMBER (*(hxa_uint32)"HaX") // 4290632
+#define HAX_MAGIC_NUMBER (*(hxa_uint32)"HxA") // 4290632
 
 typedef struct{
 //	hxa_uint32 magic_number; The file begins with a file identifyer. it always has to be the 4 bytes "HxA", See definition of HAX_MAGIC_NUMBER. Since the magic number is always the same we dont store it in this structure even if it is always precent in files.
-	hxa_uint8 version; // HXA_VERSION_FORMAT
+	hxa_uint32 version; // HXA_VERSION_FORMAT
 	hxa_uint32 node_count; // number of nodes in the file
 	HXANode *node_array; // array of nodes.
 }HXAFile;
