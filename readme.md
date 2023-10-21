@@ -12,7 +12,7 @@ Unfortunately, Yes. All existing formats are either too large and complicated to
 
 - Who is this format for?
 
-For people who want a capable open Graphics format that can be implemented from scratch in a few hours. It is ideal for graphics researchers, game developers or other people who wants to build custom graphics pipelines. Given how easy it is to parse and write, it should be easy to write utilities that process assets to preform tasks like: generating normals, lightmaps, tangent spaces, Error detection, GPU optimization, LOD generation, and UV mapping.
+For people who want a capable open Graphics format that can be implemented from scratch in a few hours. It is ideal for graphics researchers, game developers or other people who wants to build custom graphics pipelines. Given how easy it is to parse and write, it should be easy to write utilities that process assets to perform tasks like: generating normals, lightmaps, tangent spaces, Error detection, GPU optimization, LOD generation, and UV mapping.
 
 - Why store images in the format when there are so many good image formats already?
 
@@ -179,7 +179,7 @@ typedef struct{
 #define HAX_MAGIC_NUMBER (*(hxa_uint32)"HaX") // 4290632
 
 typedef struct{
-//	hxa_uint32 magic_number; The file begins with a file identifyer. it always has to be the 4 bytes "HxA", See definition of HAX_MAGIC_NUMBER. Since the magic number is always the same we dont store it in this structure even if it is always precent in files.
+//	hxa_uint32 magic_number; The file begins with a file identifyer. it always has to be the 4 bytes "HxA", See definition of HAX_MAGIC_NUMBER. Since the magic number is always the same we dont store it in this structure even if it is always present in files.
 	hxa_uint8 version;
 	hxa_uint32 node_count; // number of nodes in the file
 	HXANode *node_array; // array of nodes.
